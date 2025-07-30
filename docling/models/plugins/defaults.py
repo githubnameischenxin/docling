@@ -4,7 +4,8 @@ def ocr_engines():
     from docling.models.rapid_ocr_model import RapidOcrModel
     from docling.models.tesseract_ocr_cli_model import TesseractOcrCliModel
     from docling.models.tesseract_ocr_model import TesseractOcrModel
-
+    from docling.models.api_ocr_model import ApiOcrModel
+    
     return {
         "ocr_engines": [
             EasyOcrModel,
@@ -12,6 +13,7 @@ def ocr_engines():
             RapidOcrModel,
             TesseractOcrModel,
             TesseractOcrCliModel,
+            ApiOcrModel,
         ]
     }
 
