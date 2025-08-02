@@ -1,0 +1,95 @@
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "ai.barm.proto.v1.Inference";
+option java_outer_classname = "Inference";
+
+package Inference;
+
+service Inference {
+    rpc Prompt (PromptRequest) returns (CompletionResponse) {}
+    rpc StreamPrompt (PromptRequest) returns (stream CompletionResponse) {}
+    rpc Completion (CompletionRequest) returns (CompletionResponse) {}
+    rpc StreamCompletion (CompletionRequest) returns (stream CompletionResponse) {}
+}
+
+enum ImageMediaType {
+    IMAGE_MEDIA_TYPE_JPEG = 0;
+    IMAGE_MEDIA_TYPE_PNG = 1;
+    IMAGE_MEDIA_TYPE_GIF = 2;
+    IMAGE_MEDIA_TYPE_WEBP = 3;
+    IMAGE_MEDIA_TYPE_HEIC = 4;
+    IMAGE_MEDIA_TYPE_HEIF = 5;
+    IMAGE_MEDIA_TYPE_SVG = 6;
+}
+
+message Image{
+    optional ImageMediaType media_type = 1;
+    bytes data = 2;
+}
+
+message UserContent{
+    oneof user_content_oneof{
+        string text = 1;
+        Image image = 2;
+    }
+}
+
+message AssistantContent{
+    oneof assistant_content_oneof{
+        string text = 1;
+    }
+}
+
+message UserMessage{
+    repeated UserContent user_contents = 1;
+}
+
+message AssistantMessage{
+    repeated AssistantContent assistant_contents = 1;
+}
+
+message Message{
+    oneof message_oneof{
+        UserMessage user_message = 1;
+        AssistantMessage assistant_message = 2;
+    }
+}
+
+message SamplerParams{
+    optional int64 max_tokens = 1;
+    optional float temperature = 2;
+}
+
+enum ModelTrait {
+    MODEL_TRAIT_DEFAULT = 0;
+    MODEL_TRAIT_COT = 1;
+    MODEL_TRAIT_IMAGE_TO_TEXT = 2;
+    MODEL_TRAIT_TEXT_TO_IMAGE = 3;
+}
+
+message ModelParams{
+    optional ModelTrait model_trait = 1;
+    string preamble = 2;
+    optional SamplerParams sampler_params = 3;
+}
+
+message PromptRequest {
+    ModelParams model_params = 1;
+    string prompt = 2;
+}
+
+message CompletionResponse {
+    string message = 1;
+}
+
+message CompletionRequest {
+    ModelParams model_params = 1;
+    UserMessage user_message = 2;
+    repeated Message chat_history = 3;
+}
+
+//message ChatResponse {
+//    AssistantMessage assistant_message = 1;
+//}

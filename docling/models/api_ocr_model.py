@@ -55,6 +55,7 @@ class ApiOcrModel(BaseOcrModel):
                     PIL.Image.fromarray(im).save(buf, format="PNG")
                     image_bytes = buf.getvalue()
 
+                    _log.info("Running OCR on image...start")
                     # Use remote API
                     try:
                         markdown_text = self.options.run_ocr(image_bytes)
@@ -62,6 +63,7 @@ class ApiOcrModel(BaseOcrModel):
                         _log.warning(f"OCR API failed: {e}")
                         markdown_text = ""
 
+                    _log.info("Running OCR on image...end")
                     # Create a fake cell for now (position = bounding box)
                     if markdown_text.strip():
                         cell = TextCell(

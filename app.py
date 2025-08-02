@@ -1,3 +1,6 @@
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from io import BytesIO
 import os
 from fastapi import FastAPI, File, UploadFile, HTTPException
@@ -20,7 +23,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 _log = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -37,12 +40,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-API_KEY = os.getenv("OPENAI_API_KEY")
+MTLS_GRPC_ADDRESS = os.getenv("MTLS_GRPC_ADDRESS", "127.0.0.1:9988")
+MTLS_CA_CERT_PATH = os.getenv("MTLS_CA_CERT_PATH", "/etc/docling/certs/ca.crt")
+MTLS_CLIENT_CERT_PATH = os.getenv("MTLS_CLIENT_CERT_PATH", "/etc/docling/certs/client.crt")
+MTLS_CLIENT_KEY_PATH = os.getenv("MTLS_CLIENT_KEY_PATH", "/etc/docling/certs/client.key")
+API_KEY = os.getenv("OPENAI_API_KEY", "sk-xxx")
 BASE_URL = os.getenv("BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")
 LLM_MODEL = os.getenv("LLM_MODEL", "qwen2.5-vl-72b-instruct")
-prompt = "Convert this page to markdown. Do not miss any text and only output the bare markdown!"
+# prompt = "Convert this image to markdown. Do not miss any text and only output the bare markdown!"
+prompt="Extract or describe the content of the image and convert it into markdown format, trying to ensure the information is complete and not add other information."
 
 api_ocr_options = ApiOcrOptions(
+    mTLS_grpc_address=MTLS_GRPC_ADDRESS,
+    mTLS_ca_cert_path=MTLS_CA_CERT_PATH,
+    mTLS_client_cert_path=MTLS_CLIENT_CERT_PATH,
+    mTLS_client_key_path=MTLS_CLIENT_KEY_PATH,
     url=BASE_URL,
     model=LLM_MODEL,
     api_key=API_KEY,
@@ -100,6 +112,7 @@ converter = DocumentConverter(
 )
 
 
+executor = ThreadPoolExecutor(max_workers=8)
 
 @app.post("/convert", response_class=PlainTextResponse)
 async def ocr_file(file: UploadFile = File(...)):
@@ -109,13 +122,16 @@ async def ocr_file(file: UploadFile = File(...)):
             contents = await file.read()
             file_stream = BytesIO(contents)
             stream = DocumentStream(name=file_name, stream=file_stream)
-            doc = converter.convert(stream).document
+            loop = asyncio.get_running_loop()
+            convert_sync = partial(converter.convert, stream)
+            conversion_result = await loop.run_in_executor(executor, convert_sync)
+            doc = conversion_result.document
             md = doc.export_to_markdown()
             return md
         else:
             raise HTTPException(status_code=400, detail="Provide either a file")
     except Exception as e:
-        _log.error(f"Conversion failed: {e}")
+        _log.error(f"Conversion failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Conversion failed")
 
 

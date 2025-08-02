@@ -10,7 +10,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install --no-cache-dir . \
+RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu . \
     && pip install --no-cache-dir -r requirements.txt
 
 # On container environments, always set a thread budget to avoid undesired thread congestion.
