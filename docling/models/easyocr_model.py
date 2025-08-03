@@ -14,6 +14,8 @@ from docling.datamodel.base_models import Page
 from docling.datamodel.document import ConversionResult
 from docling.datamodel.pipeline_options import (
     EasyOcrOptions,
+)
+from docling.datamodel.ocr_options import (
     OcrOptions,
 )
 from docling.datamodel.settings import settings

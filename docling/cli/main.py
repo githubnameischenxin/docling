@@ -48,7 +48,6 @@ from docling.datamodel.document import ConversionResult
 from docling.datamodel.pipeline_options import (
     AsrPipelineOptions,
     EasyOcrOptions,
-    OcrOptions,
     PaginatedPipelineOptions,
     PdfBackend,
     PdfPipelineOptions,
@@ -74,6 +73,7 @@ from docling.document_converter import (
 from docling.models.factories import get_ocr_factory
 from docling.pipeline.asr_pipeline import AsrPipeline
 from docling.pipeline.vlm_pipeline import VlmPipeline
+from docling.datamodel.ocr_options import OcrOptions
 
 warnings.filterwarnings(action="ignore", category=UserWarning, module="pydantic|torch")
 warnings.filterwarnings(action="ignore", category=FutureWarning, module="easyocr")

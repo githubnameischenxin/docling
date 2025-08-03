@@ -13,6 +13,8 @@ from docling.datamodel.base_models import Page
 from docling.datamodel.document import ConversionResult
 from docling.datamodel.pipeline_options import (
     OcrMacOptions,
+)
+from docling.datamodel.ocr_options import (
     OcrOptions,
 )
 from docling.datamodel.settings import settings

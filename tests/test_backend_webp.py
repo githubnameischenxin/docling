@@ -7,10 +7,12 @@ from docling.datamodel.document import ConversionResult, DoclingDocument
 from docling.datamodel.pipeline_options import (
     EasyOcrOptions,
     OcrMacOptions,
-    OcrOptions,
     RapidOcrOptions,
     TesseractCliOcrOptions,
     TesseractOcrOptions,
+)
+from docling.datamodel.ocr_options import (
+    OcrOptions,
 )
 from docling.document_converter import DocumentConverter, ImageFormatOption
 from tests.verify_utils import verify_conversion_result_v2

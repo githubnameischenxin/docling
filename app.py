@@ -12,7 +12,8 @@ from docling.datamodel.pipeline_options import (
     PdfPipelineOptions,
     VlmPipelineOptions
 )
-from docling.datamodel.pipeline_options_vlm_model import ApiVlmOptions, ResponseFormat
+# from docling.datamodel.pipeline_options_vlm_model import ApiVlmOptions, ResponseFormat
+from docling.datamodel.pipeline_options_vlm_model import ResponseFormat
 from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
 from docling.pipeline.vlm_pipeline import VlmPipeline
 from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
@@ -23,7 +24,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 _log = logging.getLogger(__name__)
 
 app = FastAPI(
@@ -63,18 +64,18 @@ api_ocr_options = ApiOcrOptions(
     scale=1.0,
 )
 
-api_vlm_options = ApiVlmOptions(
-    url=f"{BASE_URL}/chat/completions",
-    headers={
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json",
-    },
-    params=dict(model=LLM_MODEL),
-    prompt=prompt,
-    timeout=90,
-    scale=1.0,
-    response_format=ResponseFormat.MARKDOWN,
-)
+# api_vlm_options = ApiVlmOptions(
+#     url=f"{BASE_URL}/chat/completions",
+#     headers={
+#         "Authorization": f"Bearer {API_KEY}",
+#         "Content-Type": "application/json",
+#     },
+#     params=dict(model=LLM_MODEL),
+#     prompt=prompt,
+#     timeout=90,
+#     scale=1.0,
+#     response_format=ResponseFormat.MARKDOWN,
+# )
 
 converter = DocumentConverter(
     allowed_formats=[
@@ -105,7 +106,7 @@ converter = DocumentConverter(
             pipeline_cls=VlmPipeline,
             pipeline_options=VlmPipelineOptions(
                 enable_remote_services=True,
-                vlm_options=api_vlm_options
+                vlm_options=api_ocr_options
             ),
         )
     }

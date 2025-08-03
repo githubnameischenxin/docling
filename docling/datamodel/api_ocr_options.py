@@ -1,11 +1,12 @@
-from typing import ClassVar, Optional, Union, List, Callable, Literal
+from typing import Any, ClassVar, Dict, Optional, Union, List, Callable, Literal
 from pydantic import AnyUrl
-from docling.datamodel.pipeline_options import OcrOptions
+from docling.datamodel.ocr_options import OcrOptions
 from docling_core.types.doc.page import SegmentedPage
 import logging
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
+from docling.datamodel.pipeline_options_vlm_model import ResponseFormat
 from docling.grpclient.inference_client import InferenceClient
 from docling.proto.inference_pb2 import (
     CompletionRequest,
@@ -53,6 +54,9 @@ class ApiOcrOptions(OcrOptions):
     scale: float = 2.0
     max_size: Optional[int] = None
     temperature: float = 0.0
+
+    response_format: ResponseFormat = ResponseFormat.MARKDOWN
+    params: Dict[str, Any] = {}
 
     class Config:
         extra = "forbid"

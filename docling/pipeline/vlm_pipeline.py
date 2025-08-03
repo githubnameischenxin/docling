@@ -2,7 +2,9 @@ import logging
 import re
 from io import BytesIO
 from pathlib import Path
+import traceback
 from typing import List, Optional, Union, cast
+import copy
 
 from docling_core.types.doc import (
     BoundingBox,
@@ -24,6 +26,7 @@ from docling.backend.abstract_backend import AbstractDocumentBackend
 from docling.backend.html_backend import HTMLDocumentBackend
 from docling.backend.md_backend import MarkdownDocumentBackend
 from docling.backend.pdf_backend import PdfDocumentBackend
+from docling.datamodel.api_ocr_options import ApiOcrOptions
 from docling.datamodel.base_models import InputFormat, Page
 from docling.datamodel.document import ConversionResult, InputDocument
 from docling.datamodel.pipeline_options import (
@@ -75,7 +78,15 @@ class VlmPipeline(PaginatedPipeline):
 
         self.keep_images = self.pipeline_options.generate_page_images
 
-        if isinstance(pipeline_options.vlm_options, ApiVlmOptions):
+        if isinstance(pipeline_options.vlm_options, ApiOcrOptions):
+            self.build_pipe = [
+                ApiVlmModel(
+                    enabled=True,  # must be always enabled for this pipeline to make sense.
+                    enable_remote_services=self.pipeline_options.enable_remote_services,
+                    vlm_options=cast(ApiOcrOptions, self.pipeline_options.vlm_options),
+                ),
+            ]
+        elif isinstance(pipeline_options.vlm_options, ApiVlmOptions):
             self.build_pipe = [
                 ApiVlmModel(
                     enabled=True,  # must be always enabled for this pipeline to make sense.
@@ -224,6 +235,7 @@ class VlmPipeline(PaginatedPipeline):
 
         return conv_res.document
 
+
     def _turn_md_into_doc(self, conv_res):
         def _extract_markdown_code(text):
             """
@@ -297,9 +309,11 @@ class VlmPipeline(PaginatedPipeline):
                         charspan=[0, 0],
                     )
                 ]
-                conv_res.document.append_child_item(child=item)
-
+                if not item.children:
+                    conv_res.document.append_child_item(child=item)
+                    
         return conv_res.document
+
 
     def _turn_html_into_doc(self, conv_res):
         def _extract_html_code(text):

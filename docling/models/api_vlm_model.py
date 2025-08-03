@@ -1,22 +1,27 @@
 from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
+from io import BytesIO
 
+from docling.datamodel.api_ocr_options import ApiOcrOptions
 from docling.datamodel.base_models import Page, VlmPrediction
 from docling.datamodel.document import ConversionResult
-from docling.datamodel.pipeline_options_vlm_model import ApiVlmOptions
 from docling.exceptions import OperationNotAllowed
 from docling.models.base_model import BasePageModel
 from docling.utils.api_image_request import api_image_request
 from docling.utils.profiling import TimeRecorder
+import numpy as np
+import logging
 
+_log = logging.getLogger(__name__)
 
 class ApiVlmModel(BasePageModel):
     def __init__(
         self,
         enabled: bool,
         enable_remote_services: bool,
-        vlm_options: ApiVlmOptions,
+        vlm_options: ApiOcrOptions,
     ):
+        _log.debug(f"start ApiVlmModel:")
         self.enabled = enabled
         self.vlm_options = vlm_options
         if self.enabled:
@@ -58,15 +63,18 @@ class ApiVlmModel(BasePageModel):
                     else:
                         prompt = self.vlm_options.prompt
 
-                    page_tags = api_image_request(
-                        image=hi_res_image,
-                        prompt=prompt,
-                        url=self.vlm_options.url,
-                        timeout=self.timeout,
-                        headers=self.vlm_options.headers,
-                        **self.params,
-                    )
-
+                    # page_tags = api_image_request(
+                    #     image=hi_res_image,
+                    #     prompt=prompt,
+                    #     url=self.vlm_options.url,
+                    #     timeout=self.timeout,
+                    #     headers=self.vlm_options.headers,
+                    #     **self.params,
+                    # )
+                    img_io = BytesIO()
+                    hi_res_image.save(img_io, "PNG")
+                    image_bytes = img_io.getvalue()
+                    page_tags = self.vlm_options.run_ocr(image_bytes)
                     page.predictions.vlm_response = VlmPrediction(text=page_tags)
 
                 return page

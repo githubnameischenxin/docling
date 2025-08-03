@@ -16,6 +16,7 @@ from docling.datamodel import asr_model_specs
 
 # Import the following for backwards compatibility
 from docling.datamodel.accelerator_options import AcceleratorDevice, AcceleratorOptions
+from docling.datamodel.api_ocr_options import ApiOcrOptions
 from docling.datamodel.layout_model_specs import (
     DOCLING_LAYOUT_EGRET_LARGE,
     DOCLING_LAYOUT_EGRET_MEDIUM,
@@ -25,6 +26,7 @@ from docling.datamodel.layout_model_specs import (
     DOCLING_LAYOUT_V2,
     LayoutModelConfig,
 )
+from docling.datamodel.ocr_options import BaseOptions, OcrOptions
 from docling.datamodel.pipeline_options_asr_model import (
     InlineAsrOptions,
 )
@@ -44,13 +46,6 @@ from docling.datamodel.vlm_model_specs import (
 
 _log = logging.getLogger(__name__)
 
-
-class BaseOptions(BaseModel):
-    """Base class for options."""
-
-    kind: ClassVar[str]
-
-
 class TableFormerMode(str, Enum):
     """Modes for the TableFormer model."""
 
@@ -68,16 +63,6 @@ class TableStructureOptions(BaseModel):
         # False: Let table structure model define the text cells, ignore PDF cells.
     )
     mode: TableFormerMode = TableFormerMode.ACCURATE
-
-
-class OcrOptions(BaseOptions):
-    """OCR options."""
-
-    lang: List[str]
-    force_full_page_ocr: bool = False  # If enabled a full page OCR is always applied
-    bitmap_area_threshold: float = (
-        0.05  # percentage of the area for a bitmap to processed with OCR
-    )
 
 
 class RapidOcrOptions(OcrOptions):
@@ -270,7 +255,7 @@ class VlmPipelineOptions(PaginatedPipelineOptions):
         False  # (To be used with vlms, or other generative models)
     )
     # If True, text from backend will be used instead of generated text
-    vlm_options: Union[InlineVlmOptions, ApiVlmOptions] = (
+    vlm_options: Union[InlineVlmOptions, ApiVlmOptions, ApiOcrOptions] = (
         smoldocling_vlm_conversion_options
     )
 

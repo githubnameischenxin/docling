@@ -12,11 +12,13 @@ from docling.datamodel.document import ConversionResult
 from docling.datamodel.pipeline_options import (
     EasyOcrOptions,
     OcrMacOptions,
-    OcrOptions,
     PdfPipelineOptions,
     RapidOcrOptions,
     TesseractCliOcrOptions,
     TesseractOcrOptions,
+)
+from docling.datamodel.ocr_options import (
+    OcrOptions,
 )
 from docling.document_converter import DocumentConverter, PdfFormatOption
 
